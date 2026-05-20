@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3D Printer Fault Detection</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }
+    .container { max-width: 720px; margin: 30px auto; background: #fff; padding: 28px 32px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+    h1 { margin-top: 0; color: #2c3e50; font-size: 1.6rem; }
+    p.desc { color: #555; margin-bottom: 20px; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .col { flex: 1; min-width: 130px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #34495e; }
+    input[type="number"] {
+      width: 100%; padding: 10px 8px; border: 1px solid #d3d9df;
+      border-radius: 6px; font-size: 1rem; transition: border 0.2s;
+    }
+    input[type="number"]:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0,123,255,0.15); }
+    .actions { margin-top: 20px; display: flex; gap: 12px; align-items: center; }
+    button { padding: 11px 22px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; }
+    button.primary { background: #007bff; color: #fff; }
+    button.primary:hover { background: #0056cc; }
+    button.secondary { background: #6c757d; color: #fff; }
+    button.secondary:hover { background: #545b62; }
+    .result { margin-top: 22px; padding: 14px 16px; border-radius: 8px; font-weight: 700; font-size: 1.05rem; }
+    .result.ok   { background: #e9f7ef; color: #18632e; border: 1px solid #c3e6cf; }
+    .result.warn { background: #fff4e6; color: #7a4b00; border: 1px solid #ffddb2; }
+    .hint { color: #6b7280; font-size: 0.85rem; margin-top: 12px; }
+    .sample-values { margin-top: 14px; background: #f8f9fa; border-radius: 8px; padding: 12px 16px; }
+    .sample-values h4 { margin: 0 0 8px; color: #495057; font-size: 0.9rem; }
+    .sample-btn { background: #e9ecef; border: 1px solid #ced4da; color: #333; padding: 5px 12px; border-radius: 5px; font-size: 0.82rem; cursor: pointer; margin-right: 6px; margin-top: 4px; }
+    .sample-btn:hover { background: #dee2e6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🖨️ 3D Printer Fault Detection</h1>
+    <p class="desc">Enter the vibration / movement sensor values (X, Y, Z axes) from the printer. Click <strong>Predict</strong> to detect faults.</p>
+
+    <form action="/predict" method="POST" id="predict-form" autocomplete="off">
+      <div class="row">
+        <div class="col">
+          <label for="x_direction">X Direction</label>
+          <!-- FIX: name attributes must match what app.py reads via request.form -->
+          <input id="x_direction" name="x_direction" type="number" step="0.0001" required placeholder="e.g. 0.31">
+        </div>
+        <div class="col">
+          <label for="y_direction">Y Direction</label>
+          <input id="y_direction" name="y_direction" type="number" step="0.0001" required placeholder="e.g. 1.02">
+        </div>
+        <div class="col">
+          <label for="z_direction">Z Direction</label>
+          <input id="z_direction" name="z_direction" type="number" step="0.0001" required placeholder="e.g. -9.18">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="submit">🔍 Predict</button>
+        <button class="secondary" type="button" onclick="document.getElementById('predict-form').reset();">Reset</button>
+      </div>
+    </form>
+
+    <!-- Sample values to try -->
+    <div class="sample-values">
+      <h4>📋 Try sample values from dataset:</h4>
+      <button class="sample-btn" onclick="fillSample(0.31, 1.02, -9.18)">Normal sample 1</button>
+      <button class="sample-btn" onclick="fillSample(-0.78, 0.98, -9.10)">Normal sample 2</button>
+      <button class="sample-btn" onclick="fillSample(2.50, 3.80, -5.20)">Fault sample</button>
+    </div>
+
+    <!-- Prediction result -->
+    {% if prediction_text %}
+      <div class="result {{ status }}">
+        {{ prediction_text }}
+      </div>
+    {% endif %}
+
+    <p class="hint">ℹ️ Model: Logistic Regression trained on 3D printer vibration data with SMOTE balancing.</p>
+  </div>
+
+  <script>
+    function fillSample(x, y, z) {
+      document.getElementById('x_direction').value = x;
+      document.getElementById('y_direction').value = y;
+      document.getElementById('z_direction').value = z;
+    }
+  </script>
+</body>
+</html>
