@@ -36,4 +36,4 @@ The system takes vibration/movement sensor values from the 3D printer and predic
 ## 👨‍💻 Developed By
 
 Avishkar Walke
-AI & ML Student
+AI & ML Student  
